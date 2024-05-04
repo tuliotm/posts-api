@@ -37,12 +37,12 @@ gem "bootsnap", require: false
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 # gem "rack-cors"
 
-# Easily generate fake data
-gem "faker"
-
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: [:mri, :windows]
+
+  # Easily generate fake data
+  gem "ffaker"
 
   # Automatic Rails code style checking tool.
   gem "rubocop-rails", require: false
@@ -60,7 +60,7 @@ end
 
 group :test do
   gem "shoulda-matchers", "~> 6.0"
-  gem 'simplecov', require: false
-  gem 'simplecov-json', require: false
-  gem 'database_cleaner-active_record'
+  gem "simplecov", require: false
+  gem "simplecov-json", require: false
+  gem "database_cleaner-active_record"
 end
