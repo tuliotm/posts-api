@@ -44,6 +44,9 @@ group :development, :test do
   # Automatic Rails code style checking tool.
   gem "rubocop-rails", require: false
   gem "rubocop-shopify", require: false
+
+  # rspec-rails is a testing framework for Rails
+  gem "rspec-rails", "~> 6.1.0"
 end
 
 group :development do
