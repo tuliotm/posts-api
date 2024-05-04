@@ -6,4 +6,5 @@ class User < ApplicationRecord
 
   #== ASSOCIATIONS =======================================
   has_many :posts
+  has_many :ratings
 end
