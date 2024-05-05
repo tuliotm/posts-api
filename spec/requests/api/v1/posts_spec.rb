@@ -171,6 +171,11 @@ RSpec.describe("Api::V1::Posts", type: :request) do
       expect(response).to(have_http_status(:success))
     end
 
+    it "returns the correct structure for authors_ips" do
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to(all(include("ip", "authors")))
+    end
+
     it "returns correct authors_ips" do
       parsed_response = JSON.parse(response.body)
       expected_authors = [user1.login, user2.login].sort
@@ -184,6 +189,27 @@ RSpec.describe("Api::V1::Posts", type: :request) do
       expect(parsed_response).not_to(include(
         { "ip" => "192.168.0.2", "authors" => [user1.login] },
       ))
+    end
+
+    context "when no ip has multiple authors" do
+      it "returns an empty array" do
+        post2.delete
+        get("/api/v1/posts/authors_ips")
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to(eq([]))
+      end
+    end
+
+    context "when there are no posts" do
+      before do
+        Post.delete_all
+        get("/api/v1/posts/authors_ips")
+      end
+
+      it "returns an empty array" do
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to(eq([]))
+      end
     end
   end
 end

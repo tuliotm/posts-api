@@ -24,17 +24,8 @@ module Api
       end
 
       def authors_ips
-        ips = Post.select(:ip).distinct
-        authors_ips = []
-
-        ips.each do |ip|
-          users = User.joins(:posts).where(posts: { ip: ip.ip }).distinct
-          if users.count > 1
-            authors_ips << { ip: ip.ip, authors: users.pluck(:login) }
-          end
-        end
-
-        render(json: authors_ips)
+        authors_ips = Post.authors_ips
+        render(json: authors_ips, each_serializer: AuthorsIpsSerializer)
       end
 
       private
