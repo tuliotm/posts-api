@@ -8,7 +8,7 @@ module Api
 
         if @user.nil?
           @user = User.new(login: post_params[:user_login])
-          @user.save!
+          @user.save
         end
 
         @post = Post.new(user_id: @user.id, title: post_params[:title], body: post_params[:body], ip: post_params[:ip])
@@ -29,6 +29,20 @@ module Api
           .limit(n)
 
         render(json: @posts, each_serializer: TopRatedPostsSerializer)
+      end
+
+      def authors_ips
+        ips = Post.select(:ip).distinct
+        authors_ips = []
+
+        ips.each do |ip|
+          users = User.joins(:posts).where(posts: { ip: ip.ip }).distinct
+          if users.count > 1
+            authors_ips << { ip: ip.ip, authors: users.pluck(:login) }
+          end
+        end
+
+        render(json: authors_ips)
       end
 
       private

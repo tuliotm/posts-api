@@ -32,7 +32,7 @@ RSpec.describe("Api::V1::Posts", type: :request) do
           "post": {
             "title": FFaker::Lorem.sentence,
             "body": FFaker::Lorem.paragraph,
-            "ip": FFaker::Internet.ip_v4_address,
+            "login": nil,
           },
         }
       end
@@ -68,6 +68,35 @@ RSpec.describe("Api::V1::Posts", type: :request) do
       expect(parsed_response.size).to(eq(2))
       expect(parsed_response[0]["id"]).to(eq(post1.id))
       expect(parsed_response[1]["id"]).to(eq(post2.id))
+    end
+  end
+
+  describe "GET /authors_ips" do
+    let!(:user1) { create(:user) }
+    let!(:user2) { create(:user) }
+    let!(:post1) { create(:post, user: user1, ip: "192.168.0.1") }
+    let!(:post2) { create(:post, user: user2, ip: "192.168.0.1") }
+    let!(:post3) { create(:post, user: user1, ip: "192.168.0.2") }
+
+    before { get("/api/v1/posts/authors_ips") }
+
+    it "returns http success" do
+      expect(response).to(have_http_status(:success))
+    end
+
+    it "returns correct authors_ips" do
+      parsed_response = JSON.parse(response.body)
+      expected_authors = [user1.login, user2.login].sort
+      expect(parsed_response).to(include(
+        { "ip" => "192.168.0.1", "authors" => expected_authors },
+      ))
+    end
+
+    it "does not return ip with only one author" do
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).not_to(include(
+        { "ip" => "192.168.0.2", "authors" => [user1.login] },
+      ))
     end
   end
 end

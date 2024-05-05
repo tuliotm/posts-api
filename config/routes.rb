@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       resources :posts, only: [:create] do
         collection do
           get :top_rated
+          get :authors_ips
         end
       end
       resources :ratings, only: [:create]
