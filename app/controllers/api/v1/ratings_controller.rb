@@ -7,7 +7,7 @@ module Api
         result = Rating.create_and_calculate_average(rating_params)
 
         if result[:status] == :created
-          render(json: { average: result[:average] }, status: :created)
+          render(json: { average: result[:average], post_id: rating_params[:post_id] }, status: :created)
         else
           render(json: { errors: result[:errors] }, status: result[:status])
         end
