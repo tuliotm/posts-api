@@ -1,6 +1,17 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  namespace :api do
+    namespace :v1 do
+      resources :posts, only: [:create] do
+        collection do
+          get :top_rated
+          get :authors_ips
+        end
+      end
+      resources :ratings, only: [:create]
+    end
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
