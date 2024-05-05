@@ -20,6 +20,17 @@ module Api
         end
       end
 
+      def top_rated
+        n = params[:N].to_i
+        @posts = Post.joins(:ratings)
+          .select("posts.id, posts.title, posts.body, AVG(ratings.value) as average_rating")
+          .group("posts.id")
+          .order("average_rating DESC")
+          .limit(n)
+
+        render(json: @posts, each_serializer: TopRatedPostsSerializer)
+      end
+
       private
 
       def post_params

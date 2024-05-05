@@ -46,4 +46,28 @@ RSpec.describe("Api::V1::Posts", type: :request) do
       end
     end
   end
+
+  describe "GET /top_rated" do
+    let!(:post1) { create(:post) }
+    let!(:post2) { create(:post) }
+    let!(:post3) { create(:post) }
+    let!(:rating1) { create(:rating, post: post1, value: 5) }
+    let!(:rating2) { create(:rating, post: post2, value: 4) }
+    let!(:rating3) { create(:rating, post: post3, value: 3) }
+
+    before do
+      get "/api/v1/posts/top_rated", params: { N: 2 }
+    end
+
+    it "returns status code 200" do
+      expect(response).to(have_http_status(:ok))
+    end
+
+    it "returns the top N rated posts" do
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response.size).to(eq(2))
+      expect(parsed_response[0]["id"]).to(eq(post1.id))
+      expect(parsed_response[1]["id"]).to(eq(post2.id))
+    end
+  end
 end
