@@ -4,51 +4,34 @@ module Api
   module V1
     class PostsController < ApplicationController
       def create
-        @user = User.find_by(login: post_params[:user_login])
+        post = Post.user_post(post_params.merge(ip: request.remote_ip))
 
-        if @user.nil?
-          @user = User.new(login: post_params[:user_login])
-          @user.save
-        end
-
-        @post = Post.new(user_id: @user.id, title: post_params[:title], body: post_params[:body], ip: post_params[:ip])
-
-        if @post.save
-          render(json: @post, status: :created)
+        if post.present? && post.persisted?
+          render(json: CreatePostSerializer.new(post).serializable_hash.to_json, status: :created)
         else
-          render(json: @post.errors, status: :unprocessable_entity)
+          errors = post&.errors&.full_messages || ["User couldn't be created or persisted"]
+          render(json: { errors: errors }, status: :unprocessable_entity)
         end
       end
 
       def top_rated
-        n = params[:N].to_i
-        @posts = Post.joins(:ratings)
-          .select("posts.id, posts.title, posts.body, AVG(ratings.value) as average_rating")
-          .group("posts.id")
-          .order("average_rating DESC")
-          .limit(n)
+        default_top_n = 10
 
-        render(json: @posts, each_serializer: TopRatedPostsSerializer)
+        n = params[:N].presence || default_top_n
+        posts = Post.top_rated(n)
+
+        render(json: posts, each_serializer: TopRatedPostsSerializer)
       end
 
       def authors_ips
-        ips = Post.select(:ip).distinct
-        authors_ips = []
-
-        ips.each do |ip|
-          users = User.joins(:posts).where(posts: { ip: ip.ip }).distinct
-          if users.count > 1
-            authors_ips << { ip: ip.ip, authors: users.pluck(:login) }
-          end
-        end
-
-        render(json: authors_ips)
+        authors_ips = Post.authors_ips
+        render(json: authors_ips, each_serializer: AuthorsIpsSerializer)
       end
 
       private
 
       def post_params
-        params.require(:post).permit(:title, :body, :user_login, :ip)
+        params.require(:post).permit(:title, :body, :user_login)
       end
     end
   end

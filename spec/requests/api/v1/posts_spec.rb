@@ -11,38 +11,91 @@ RSpec.describe("Api::V1::Posts", type: :request) do
           "post": {
             "title": FFaker::Lorem.sentence,
             "body": FFaker::Lorem.paragraph,
-            "ip": FFaker::Internet.ip_v4_address,
             "user_login": user.login,
           },
         }
       end
 
-      before do
-        post api_v1_posts_path, params: post_attributes
-      end
-
-      it "returns status code created" do
-        expect(response).to(have_http_status(:created))
-      end
-    end
-
-    context "failure" do
-      let(:invalid_attributes) do
+      let(:new_user_login) { "new_user" }
+      let(:new_post_attributes) do
         {
           "post": {
             "title": FFaker::Lorem.sentence,
             "body": FFaker::Lorem.paragraph,
-            "login": nil,
+            "user_login": new_user_login,
           },
         }
       end
 
-      before do
-        post api_v1_posts_path, params: invalid_attributes
+      it "returns status code created with a existing user" do
+        post api_v1_posts_path, params: post_attributes
+        expect(response).to(have_http_status(:created))
+      end
+
+      it "creates the user and returns status code created" do
+        post api_v1_posts_path, params: new_post_attributes
+        expect(User.exists?(login: new_user_login)).to(be(true))
+        expect(response).to(have_http_status(:created))
+      end
+
+      it "saves the post to the database" do
+        post api_v1_posts_path, params: post_attributes
+        created_post = Post.find_by(title: post_attributes[:post][:title], user: user)
+        expect(created_post).not_to(be_nil)
+        expect(created_post.body).to(eq(post_attributes[:post][:body]))
+      end
+
+      it "saves the correct IP address" do
+        post api_v1_posts_path, params: post_attributes, headers: { "REMOTE_ADDR": "127.0.0.1" }
+
+        created_post = Post.find_by(title: post_attributes[:post][:title], user: user)
+        expect(created_post.ip).to(eq("127.0.0.1"))
+      end
+    end
+
+    context "with missing parameters" do
+      it "returns blank title error" do
+        post "/api/v1/posts", params: { "post": { body: "", user_login: "user@user.com" } }
+        json_response = JSON.parse(response.body)
+        expect(json_response["errors"]).to(include(
+          "Title can't be blank",
+        ))
+      end
+
+      it "returns blank body error" do
+        post "/api/v1/posts", params: { "post": { title: "", user_login: "user@user.com" } }
+        json_response = JSON.parse(response.body)
+        expect(json_response["errors"]).to(include(
+          "Body can't be blank",
+        ))
+      end
+
+      it "returns blank title and body error" do
+        post "/api/v1/posts", params: { "post": { user_login: "user@user.com" } }
+        json_response = JSON.parse(response.body)
+        expect(json_response["errors"]).to(include(
+          "Title can't be blank",
+          "Body can't be blank",
+        ))
+      end
+
+      it "returns blank user_login error" do
+        post "/api/v1/posts", params: { "post": { title: "" } }
+        json_response = JSON.parse(response.body)
+        expect(json_response["errors"]).to(include(
+          "User couldn't be created or persisted",
+        ))
       end
 
       it "returns status code unprocessable_entity" do
+        post "/api/v1/posts", params: { "post": { body: "", user_login: "user@user.com" } }
         expect(response).to(have_http_status(:unprocessable_entity))
+      end
+
+      it "returns status code bad_request" do
+        post "/api/v1/posts"
+        expect(response).to(have_http_status(:bad_request))
+        expect(response.body).to(include("param is missing or the value is empty: post"))
       end
     end
   end
@@ -55,19 +108,53 @@ RSpec.describe("Api::V1::Posts", type: :request) do
     let!(:rating2) { create(:rating, post: post2, value: 4) }
     let!(:rating3) { create(:rating, post: post3, value: 3) }
 
-    before do
+    context "with N parameter" do
+      before do
+        get "/api/v1/posts/top_rated", params: { N: 10 }
+      end
+
+      it "returns status code 200" do
+        expect(response).to(have_http_status(:ok))
+      end
+
+      it "returns the top N rated posts existence" do
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response.size).to(be_between(0, 10).inclusive)
+        expect(parsed_response[0]["id"]).to(eq(post1.id))
+        expect(parsed_response[1]["id"]).to(eq(post2.id))
+      end
+    end
+
+    context "when N parameter is not provided" do
+      before do
+        get "/api/v1/posts/top_rated"
+      end
+
+      it "returns status code 200 and a default number of posts" do
+        parsed_response = JSON.parse(response.body)
+        expect(response).to(have_http_status(:ok))
+        expect(parsed_response.size).to(be_between(0, 10).inclusive)
+      end
+    end
+
+    context "when there are no posts" do
+      before do
+        Rating.delete_all
+        Post.delete_all
+        get "/api/v1/posts/top_rated", params: { N: 2 }
+      end
+
+      it "returns an empty array" do
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to(eq([]))
+      end
+    end
+
+    it "returns the correct JSON structure" do
       get "/api/v1/posts/top_rated", params: { N: 2 }
-    end
-
-    it "returns status code 200" do
-      expect(response).to(have_http_status(:ok))
-    end
-
-    it "returns the top N rated posts" do
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response.size).to(eq(2))
-      expect(parsed_response[0]["id"]).to(eq(post1.id))
-      expect(parsed_response[1]["id"]).to(eq(post2.id))
+
+      expect(parsed_response[0]).to(include("id", "title", "body", "average_rating"))
     end
   end
 
@@ -84,6 +171,11 @@ RSpec.describe("Api::V1::Posts", type: :request) do
       expect(response).to(have_http_status(:success))
     end
 
+    it "returns the correct structure for authors_ips" do
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to(all(include("ip", "authors")))
+    end
+
     it "returns correct authors_ips" do
       parsed_response = JSON.parse(response.body)
       expected_authors = [user1.login, user2.login].sort
@@ -97,6 +189,27 @@ RSpec.describe("Api::V1::Posts", type: :request) do
       expect(parsed_response).not_to(include(
         { "ip" => "192.168.0.2", "authors" => [user1.login] },
       ))
+    end
+
+    context "when no ip has multiple authors" do
+      it "returns an empty array" do
+        post2.delete
+        get("/api/v1/posts/authors_ips")
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to(eq([]))
+      end
+    end
+
+    context "when there are no posts" do
+      before do
+        Post.delete_all
+        get("/api/v1/posts/authors_ips")
+      end
+
+      it "returns an empty array" do
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to(eq([]))
+      end
     end
   end
 end
