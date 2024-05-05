@@ -4,21 +4,13 @@ module Api
   module V1
     class PostsController < ApplicationController
       def create
-        @user = User.find_by(login: post_params[:user_login])
+        post = Post.user_post(post_params.merge(ip: request.remote_ip))
 
-        if @user.nil?
-          @user = User.new(login: post_params[:user_login])
-          @user.save
-        end
-
-        user_ip = request.remote_ip
-
-        @post = Post.new(user_id: @user.id, title: post_params[:title], body: post_params[:body], ip: user_ip)
-
-        if @post.save
-          render(json: @post, status: :created)
+        if post.present? && post.persisted?
+          render(json: CreatePostSerializer.new(post).serializable_hash.to_json, status: :created)
         else
-          render(json: @post.errors, status: :unprocessable_entity)
+          errors = post&.errors&.full_messages || ["User couldn't be created or persisted"]
+          render(json: { errors: errors }, status: :unprocessable_entity)
         end
       end
 

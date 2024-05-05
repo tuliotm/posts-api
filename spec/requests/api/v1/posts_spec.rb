@@ -16,32 +16,86 @@ RSpec.describe("Api::V1::Posts", type: :request) do
         }
       end
 
-      before do
-        post api_v1_posts_path, params: post_attributes
-      end
-
-      it "returns status code created" do
-        expect(response).to(have_http_status(:created))
-      end
-    end
-
-    context "failure" do
-      let(:invalid_attributes) do
+      let(:new_user_login) { "new_user" }
+      let(:new_post_attributes) do
         {
           "post": {
             "title": FFaker::Lorem.sentence,
             "body": FFaker::Lorem.paragraph,
-            "login": nil,
+            "user_login": new_user_login,
           },
         }
       end
 
-      before do
-        post api_v1_posts_path, params: invalid_attributes
+      it "returns status code created with a existing user" do
+        post api_v1_posts_path, params: post_attributes
+        expect(response).to(have_http_status(:created))
+      end
+
+      it "creates the user and returns status code created" do
+        post api_v1_posts_path, params: new_post_attributes
+        expect(User.exists?(login: new_user_login)).to(be(true))
+        expect(response).to(have_http_status(:created))
+      end
+
+      it "saves the post to the database" do
+        post api_v1_posts_path, params: post_attributes
+        created_post = Post.find_by(title: post_attributes[:post][:title], user: user)
+        expect(created_post).not_to(be_nil)
+        expect(created_post.body).to(eq(post_attributes[:post][:body]))
+      end
+
+      it "saves the correct IP address" do
+        post api_v1_posts_path, params: post_attributes, headers: { "REMOTE_ADDR": "127.0.0.1" }
+
+        created_post = Post.find_by(title: post_attributes[:post][:title], user: user)
+        expect(created_post.ip).to(eq("127.0.0.1"))
+      end
+    end
+
+    context "with missing parameters" do
+      it "returns blank title error" do
+        post "/api/v1/posts", params: { "post": { body: "", user_login: "user@user.com" } }
+        json_response = JSON.parse(response.body)
+        expect(json_response["errors"]).to(include(
+          "Title can't be blank",
+        ))
+      end
+
+      it "returns blank body error" do
+        post "/api/v1/posts", params: { "post": { title: "", user_login: "user@user.com" } }
+        json_response = JSON.parse(response.body)
+        expect(json_response["errors"]).to(include(
+          "Body can't be blank",
+        ))
+      end
+
+      it "returns blank title and body error" do
+        post "/api/v1/posts", params: { "post": { user_login: "user@user.com" } }
+        json_response = JSON.parse(response.body)
+        expect(json_response["errors"]).to(include(
+          "Title can't be blank",
+          "Body can't be blank",
+        ))
+      end
+
+      it "returns blank user_login error" do
+        post "/api/v1/posts", params: { "post": { title: "" } }
+        json_response = JSON.parse(response.body)
+        expect(json_response["errors"]).to(include(
+          "User couldn't be created or persisted",
+        ))
       end
 
       it "returns status code unprocessable_entity" do
+        post "/api/v1/posts", params: { "post": { body: "", user_login: "user@user.com" } }
         expect(response).to(have_http_status(:unprocessable_entity))
+      end
+
+      it "returns status code bad_request" do
+        post "/api/v1/posts"
+        expect(response).to(have_http_status(:bad_request))
+        expect(response.body).to(include("param is missing or the value is empty: post"))
       end
     end
   end
