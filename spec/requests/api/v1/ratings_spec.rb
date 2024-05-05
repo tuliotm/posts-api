@@ -50,12 +50,38 @@ RSpec.describe("Api::V1::Ratings", type: :request) do
     end
 
     context "failure" do
-      context "when data is nil" do
+      context "when post is nil" do
         let(:invalid_attributes) do
           {
             "rating": {
               "user_id": nil,
               "post_id": nil,
+              "value": nil,
+            },
+          }
+        end
+
+        before do
+          post api_v1_ratings_path, params: invalid_attributes
+        end
+
+        it "returns status code not_found" do
+          expect(response).to(have_http_status(:not_found))
+        end
+
+        it "returns error messages when post is null or don't exists" do
+          json_response = JSON.parse(response.body)
+          expect(json_response["errors"]).to(include("Post not found."))
+        end
+      end
+
+      context "when user and value is nil" do
+        let(:user_post) { create(:post) }
+        let(:invalid_attributes) do
+          {
+            "rating": {
+              "user_id": nil,
+              "post_id": user_post.id,
               "value": nil,
             },
           }
@@ -72,7 +98,6 @@ RSpec.describe("Api::V1::Ratings", type: :request) do
         it "return errors messages for every null fild" do
           json_response = JSON.parse(response.body)
           expect(json_response["errors"]).to(include(
-            "Post must exist",
             "User must exist",
             "Value is not included in the list",
             "Value can't be blank",
