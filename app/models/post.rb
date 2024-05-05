@@ -26,5 +26,13 @@ class Post < ApplicationRecord
       post.save
       post
     end
+
+    def top_rated(limit)
+      joins(:ratings)
+        .select("posts.id, posts.title, posts.body, AVG(ratings.value) as average_rating")
+        .group("posts.id")
+        .order("average_rating DESC")
+        .limit(limit)
+    end
   end
 end

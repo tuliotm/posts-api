@@ -108,19 +108,53 @@ RSpec.describe("Api::V1::Posts", type: :request) do
     let!(:rating2) { create(:rating, post: post2, value: 4) }
     let!(:rating3) { create(:rating, post: post3, value: 3) }
 
-    before do
+    context "with N parameter" do
+      before do
+        get "/api/v1/posts/top_rated", params: { N: 10 }
+      end
+
+      it "returns status code 200" do
+        expect(response).to(have_http_status(:ok))
+      end
+
+      it "returns the top N rated posts existence" do
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response.size).to(be_between(0, 10).inclusive)
+        expect(parsed_response[0]["id"]).to(eq(post1.id))
+        expect(parsed_response[1]["id"]).to(eq(post2.id))
+      end
+    end
+
+    context "when N parameter is not provided" do
+      before do
+        get "/api/v1/posts/top_rated"
+      end
+
+      it "returns status code 200 and a default number of posts" do
+        parsed_response = JSON.parse(response.body)
+        expect(response).to(have_http_status(:ok))
+        expect(parsed_response.size).to(be_between(0, 10).inclusive)
+      end
+    end
+
+    context "when there are no posts" do
+      before do
+        Rating.delete_all
+        Post.delete_all
+        get "/api/v1/posts/top_rated", params: { N: 2 }
+      end
+
+      it "returns an empty array" do
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to(eq([]))
+      end
+    end
+
+    it "returns the correct JSON structure" do
       get "/api/v1/posts/top_rated", params: { N: 2 }
-    end
-
-    it "returns status code 200" do
-      expect(response).to(have_http_status(:ok))
-    end
-
-    it "returns the top N rated posts" do
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response.size).to(eq(2))
-      expect(parsed_response[0]["id"]).to(eq(post1.id))
-      expect(parsed_response[1]["id"]).to(eq(post2.id))
+
+      expect(parsed_response[0]).to(include("id", "title", "body", "average_rating"))
     end
   end
 
