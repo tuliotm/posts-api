@@ -11,7 +11,9 @@ module Api
           @user.save
         end
 
-        @post = Post.new(user_id: @user.id, title: post_params[:title], body: post_params[:body], ip: post_params[:ip])
+        user_ip = request.remote_ip
+
+        @post = Post.new(user_id: @user.id, title: post_params[:title], body: post_params[:body], ip: user_ip)
 
         if @post.save
           render(json: @post, status: :created)
@@ -48,7 +50,7 @@ module Api
       private
 
       def post_params
-        params.require(:post).permit(:title, :body, :user_login, :ip)
+        params.require(:post).permit(:title, :body, :user_login)
       end
     end
   end

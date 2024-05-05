@@ -25,8 +25,8 @@ RSpec.describe("Api::V1::Ratings", type: :request) do
       end
 
       it "returns the correct average rating" do
-        parsed_response = JSON.parse(response.body)
-        expect(parsed_response).to(be_between("1", "5").inclusive)
+        parsed_response = JSON.parse(response.body).to_f
+        expect(parsed_response).to(be_between(1, 5).inclusive)
         expect(parsed_response.to_s.split(".").last.size).to(be <= 2)
       end
     end

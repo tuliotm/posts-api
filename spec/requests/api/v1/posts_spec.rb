@@ -11,7 +11,6 @@ RSpec.describe("Api::V1::Posts", type: :request) do
           "post": {
             "title": FFaker::Lorem.sentence,
             "body": FFaker::Lorem.paragraph,
-            "ip": FFaker::Internet.ip_v4_address,
             "user_login": user.login,
           },
         }
