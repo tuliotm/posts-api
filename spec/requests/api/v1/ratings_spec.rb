@@ -25,9 +25,27 @@ RSpec.describe("Api::V1::Ratings", type: :request) do
       end
 
       it "returns the correct average rating" do
-        parsed_response = JSON.parse(response.body).to_f
+        parsed_response = JSON.parse(response.body)["average"].to_f
         expect(parsed_response).to(be_between(1, 5).inclusive)
         expect(parsed_response.to_s.split(".").last.size).to(be <= 2)
+      end
+
+      it "persists the rating in the database" do
+        created_rating = Rating.find_by(
+          user_id: rating_attributes[:rating][:user_id],
+          post_id: rating_attributes[:rating][:post_id],
+        )
+        expect(created_rating).not_to(be_nil)
+        expect(created_rating.value).to(eq(rating_attributes[:rating][:value]))
+      end
+
+      it "associates the rating with the correct post and user" do
+        created_rating = Rating.find_by(
+          user_id: rating_attributes[:rating][:user_id],
+          post_id: rating_attributes[:rating][:post_id],
+        )
+        expect(created_rating.user_id).to(eq(post_instance.user.id))
+        expect(created_rating.post_id).to(eq(post_instance.id))
       end
     end
 
@@ -50,6 +68,16 @@ RSpec.describe("Api::V1::Ratings", type: :request) do
         it "returns status code unprocessable entity" do
           expect(response).to(have_http_status(:unprocessable_entity))
         end
+
+        it "return errors messages for every null fild" do
+          json_response = JSON.parse(response.body)
+          expect(json_response["errors"]).to(include(
+            "Post must exist",
+            "User must exist",
+            "Value is not included in the list",
+            "Value can't be blank",
+          ))
+        end
       end
 
       context "when value is out of range" do
@@ -68,34 +96,21 @@ RSpec.describe("Api::V1::Ratings", type: :request) do
           post api_v1_ratings_path, params: invalid_value
         end
 
-        it "returns status code unprocessable entity" do
-          expect(response).to(have_http_status(:unprocessable_entity))
-        end
-
         it "returns the correct error message" do
           parsed_response = JSON.parse(response.body)
-          expect(parsed_response["value"]).to(eq(["is not included in the list"]))
+          expect(parsed_response["errors"]).to(eq(["Value is not included in the list"]))
+          expect(response).to(have_http_status(:unprocessable_entity))
         end
       end
 
       context "when already rated by the user" do
-        let(:post_instance) { create(:post) }
+        let(:rating) { create(:rating) }
         let(:rating_attributes) do
           {
             "rating": {
-              "user_id": post_instance.user.id,
-              "post_id": post_instance.id,
+              "user_id": rating.user.id,
+              "post_id": rating.post.id,
               "value": rand(1..5),
-            },
-          }
-        end
-
-        let(:already_rated) do
-          {
-            "rating": {
-              "user_id": post_instance.user.id,
-              "post_id": post_instance.id,
-              "value": (1..5),
             },
           }
         end
@@ -105,7 +120,8 @@ RSpec.describe("Api::V1::Ratings", type: :request) do
         end
 
         it "returns status code unprocessable entity" do
-          post "/api/v1/ratings", params: already_rated
+          json_response = JSON.parse(response.body)
+          expect(json_response["errors"]).to(include("Post already rated."))
           expect(response).to(have_http_status(:unprocessable_entity))
         end
       end
