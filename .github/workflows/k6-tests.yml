@@ -10,11 +10,16 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Install k6
+      - name: Install Snap
         run: |
           sudo apt update
-          sudo apt install -y k6
+          sudo apt install -y snapd
+          sudo snap install core
+
+      - name: Install k6 via Snap
+        run: |
+          sudo snap install k6
 
       - name: Run k6 Load Tests
         run: |
-          k6 run --out json=output.json test/load_test.js
+          k6 run script.js
