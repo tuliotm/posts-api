@@ -22,18 +22,36 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: []
-                properties:
-                  errors:
-                    type: array
-                    items:
-                      type: string
+                "$ref": "#/components/schemas/ErrorsMessages"
       requestBody:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/NewPost"
+              "$ref": "#/components/schemas/CreateNewPost"
+  "/api/v1/ratings":
+    post:
+      summary: create ratings
+      tags:
+      - Rating
+      parameters: []
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RenderNewRating"
+        '422':
+          description: error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorsMessages"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateNewRating"
 servers:
 - url: "{defaultHost}"
   variables:
@@ -46,7 +64,7 @@ components:
       name: X-TOKEN
       in: header
   schemas:
-    NewPost:
+    CreateNewPost:
       type: object
       required: []
       properties:
@@ -100,3 +118,33 @@ components:
                           type: string
                         type:
                           type: string
+    ErrorsMessages:
+      type: object
+      required: []
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+    CreateNewRating:
+      type: object
+      required: []
+      properties:
+        rating:
+          type: object
+          required: []
+          properties:
+            user_id:
+              type: number
+            post_id:
+              type: number
+            value:
+              type: number
+    RenderNewRating:
+      type: object
+      required: []
+      properties:
+        average:
+          type: string
+        post_id:
+          type: number

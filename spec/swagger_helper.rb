@@ -131,11 +131,46 @@ RSpec.configure do |config|
               "errors": {
                 "type": "array",
                 "items": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+                  "type": "string",
+                },
+              },
+            },
+          },
+          ####################
+          CreateNewRating: {
+            "type": "object",
+            "required": [],
+            "properties": {
+              "rating": {
+                "type": "object",
+                "required": [],
+                "properties": {
+                  "user_id": {
+                    "type": "number",
+                  },
+                  "post_id": {
+                    "type": "number",
+                  },
+                  "value": {
+                    "type": "number",
+                  },
+                },
+              },
+            },
+          },
+          ####################
+          RenderNewRating: {
+            "type": "object",
+            "required": [],
+            "properties": {
+              "average": {
+                "type": "string",
+              },
+              "post_id": {
+                "type": "number",
+              },
+            },
+          },
         },
       },
     },
