@@ -61,3 +61,10 @@ jobs:
         run: |
           sleep 10
           bundle exec rails server -e test -p 3000 -d
+
+      - name: Run Rspec
+        env:
+          RAILS_ENV: "test"
+          DATABASE_URL: "postgres://postgres:password@localhost:5432/posts_api_test"
+        run: |
+          bundle exec rspec
