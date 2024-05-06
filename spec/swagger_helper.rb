@@ -171,6 +171,28 @@ RSpec.configure do |config|
               },
             },
           },
+          ####################
+          RenderTopNRatedPosts: {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "id": {
+                  "type": "number",
+                },
+                "title": {
+                  "type": "string",
+                },
+                "body": {
+                  "type": "string",
+                },
+                "average_rating": {
+                  "type": "string",
+                },
+              },
+            },
+          },
         },
       },
     },

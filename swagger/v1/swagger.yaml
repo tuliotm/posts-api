@@ -28,6 +28,21 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/CreateNewPost"
+  "/api/v1/posts/top_rated":
+    get:
+      summary: get top rated posts
+      tags:
+      - Post
+      parameters:
+      - name: N
+        in: query
+      responses:
+        '200':
+          description: get top rated posts by until 'N' query params
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RenderTopNRatedPosts"
   "/api/v1/ratings":
     post:
       summary: create ratings
@@ -148,3 +163,17 @@ components:
           type: string
         post_id:
           type: number
+    RenderTopNRatedPosts:
+      type: array
+      items:
+        type: object
+        required: []
+        properties:
+          id:
+            type: number
+          title:
+            type: string
+          body:
+            type: string
+          average_rating:
+            type: string
