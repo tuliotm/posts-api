@@ -10,13 +10,15 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Set up PostgreSQL
-        uses: sourceryai/setup-postgresql-action@v1
-        with:
-          postgresql version: '16'
-          postgresql db: 'posts_api_test'
-          postgresql user: 'posts_api'
-          postgresql password: 'password'
+      - name: Install PostgreSQL
+        run: |
+          sudo apt update
+          sudo apt install -y postgresql-16 postgresql-client-16
+
+      - name: Set up PostgreSQL User and DB
+        run: |
+          sudo -u postgres psql -c "CREATE USER posts_api WITH PASSWORD 'password';"
+          sudo -u postgres psql -c "CREATE DATABASE posts_api_test OWNER posts_api;"
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -33,7 +35,6 @@ jobs:
           PGUSER: posts_api
           PGPASSWORD: password
         run: |
-          bundle exec rails db:create
           bundle exec rails db:migrate
           bundle exec rails db:seed
 
