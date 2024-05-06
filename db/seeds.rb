@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 BASE_URL = "http://localhost:3000/api/v1"
-POST_COUNT = 200_000
+POST_COUNT = 200
 USER_COUNT = 100
 IP_COUNT = 50
 RATING_PERCENTAGE = 0.75

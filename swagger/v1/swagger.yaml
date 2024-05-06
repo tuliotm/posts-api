@@ -1,0 +1,203 @@
+---
+openapi: 3.0.1
+info:
+  title: API V1
+  version: v1
+paths:
+  "/api/v1/posts":
+    post:
+      summary: create post
+      tags:
+      - Post
+      parameters: []
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RenderNewPost"
+        '422':
+          description: error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorsMessages"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateNewPost"
+  "/api/v1/posts/top_rated":
+    get:
+      summary: get top rated posts with N params
+      tags:
+      - Post
+      parameters:
+      - name: N
+        in: query
+      responses:
+        '200':
+          description: get top rated posts by until 'N' query params
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RenderTopNRatedPosts"
+  "/api/v1/posts/authors_ips":
+    get:
+      summary: get authors ips
+      tags:
+      - Post
+      responses:
+        '200':
+          description: get authors ips
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RenderAuthorsIps"
+  "/api/v1/ratings":
+    post:
+      summary: create ratings
+      tags:
+      - Rating
+      parameters: []
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RenderNewRating"
+        '422':
+          description: error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorsMessages"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateNewRating"
+servers:
+- url: "{defaultHost}"
+  variables:
+    defaultHost:
+      default: http://localhost:3000
+components:
+  securitySchemes:
+    X-TOKEN:
+      type: apiKey
+      name: X-TOKEN
+      in: header
+  schemas:
+    CreateNewPost:
+      type: object
+      required: []
+      properties:
+        post:
+          type: object
+          required: []
+          properties:
+            title:
+              type: string
+            body:
+              type: string
+            user_login:
+              type: string
+    RenderNewPost:
+      type: object
+      required: []
+      properties:
+        data:
+          type: object
+          required: []
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            attributes:
+              type: object
+              required: []
+              properties:
+                id:
+                  type: number
+                title:
+                  type: string
+                body:
+                  type: string
+                ip:
+                  type: string
+            relationships:
+              type: object
+              required: []
+              properties:
+                user:
+                  type: object
+                  required: []
+                  properties:
+                    data:
+                      type: object
+                      required: []
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+    ErrorsMessages:
+      type: object
+      required: []
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+    CreateNewRating:
+      type: object
+      required: []
+      properties:
+        rating:
+          type: object
+          required: []
+          properties:
+            user_id:
+              type: number
+            post_id:
+              type: number
+            value:
+              type: number
+    RenderNewRating:
+      type: object
+      required: []
+      properties:
+        average:
+          type: string
+        post_id:
+          type: number
+    RenderTopNRatedPosts:
+      type: array
+      items:
+        type: object
+        required: []
+        properties:
+          id:
+            type: number
+          title:
+            type: string
+          body:
+            type: string
+          average_rating:
+            type: string
+    RenderAuthorsIps:
+      type: array
+      items:
+        type: object
+        required: []
+        properties:
+          ip:
+            type: string
+          authors:
+            type: array
+            items:
+              type: string

@@ -40,6 +40,10 @@ gem "bootsnap", require: false
 # Fast, simple and easy to use JSON:API serialization library
 gem "jsonapi-serializer"
 
+# Generate beautiful API documentation, including a UI to explore and test operations,
+# directly from your rspec integration tests. OpenAPI 2 and 3 supported
+gem "rswag"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: [:mri, :windows]
