@@ -32,6 +32,100 @@ RSpec.configure do |config|
           },
         },
       ],
+      components: {
+        securitySchemes: {
+          "X-TOKEN" => {
+            type: :apiKey,
+            name: "X-TOKEN",
+            in: :header,
+          },
+        },
+        schemas: {
+          NewPost: {
+            "type": "object",
+            "required": [],
+            "properties": {
+              "post": {
+                "type": "object",
+                "required": [],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                  },
+                  "body": {
+                    "type": "string",
+                  },
+                  "user_login": {
+                    "type": "string",
+                  },
+                },
+              },
+            },
+          },
+          ####################
+          RenderNewPost: {
+            "type": "object",
+            "required": [],
+            "properties": {
+              "data": {
+                "type": "object",
+                "required": [],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                  },
+                  "type": {
+                    "type": "string",
+                  },
+                  "attributes": {
+                    "type": "object",
+                    "required": [],
+                    "properties": {
+                      "id": {
+                        "type": "number",
+                      },
+                      "title": {
+                        "type": "string",
+                      },
+                      "body": {
+                        "type": "string",
+                      },
+                      "ip": {
+                        "type": "string",
+                      },
+                    },
+                  },
+                  "relationships": {
+                    "type": "object",
+                    "required": [],
+                    "properties": {
+                      "user": {
+                        "type": "object",
+                        "required": [],
+                        "properties": {
+                          "data": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                              },
+                              "type": {
+                                "type": "string",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          ####################
+        },
+      },
     },
   }
 

@@ -1,0 +1,102 @@
+---
+openapi: 3.0.1
+info:
+  title: API V1
+  version: v1
+paths:
+  "/api/v1/posts":
+    post:
+      summary: create post
+      tags:
+      - Post
+      parameters: []
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RenderNewPost"
+        '422':
+          description: error
+          content:
+            application/json:
+              schema:
+                type: object
+                required: []
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/NewPost"
+servers:
+- url: "{defaultHost}"
+  variables:
+    defaultHost:
+      default: http://localhost:3000
+components:
+  securitySchemes:
+    X-TOKEN:
+      type: apiKey
+      name: X-TOKEN
+      in: header
+  schemas:
+    NewPost:
+      type: object
+      required: []
+      properties:
+        post:
+          type: object
+          required: []
+          properties:
+            title:
+              type: string
+            body:
+              type: string
+            user_login:
+              type: string
+    RenderNewPost:
+      type: object
+      required: []
+      properties:
+        data:
+          type: object
+          required: []
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            attributes:
+              type: object
+              required: []
+              properties:
+                id:
+                  type: number
+                title:
+                  type: string
+                body:
+                  type: string
+                ip:
+                  type: string
+            relationships:
+              type: object
+              required: []
+              properties:
+                user:
+                  type: object
+                  required: []
+                  properties:
+                    data:
+                      type: object
+                      required: []
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
