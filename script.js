@@ -1,12 +1,9 @@
 import http from 'k6/http';
-import { check, sleep } from 'k6';
+import { check } from 'k6';
 
 export let options = {
-  stages: [
-    { duration: '1m', target: 10 },
-    { duration: '3m', target: 20 },
-    { duration: '1m', target: 0 },
-  ],
+  vus: 1000,
+  duration: '30s',
 };
 
 export default function () {
@@ -22,10 +19,7 @@ export default function () {
     headers: { 'Content-Type': 'application/json' },
   };
 
-
   const res = http.post('http://localhost:3000/api/v1/ratings', payload, params);
 
   check(res, { 'status is 201': (r) => r.status === 201 });
-
-  sleep(1);
 }
