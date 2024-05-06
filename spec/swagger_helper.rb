@@ -41,7 +41,7 @@ RSpec.configure do |config|
           },
         },
         schemas: {
-          NewPost: {
+          CreateNewPost: {
             "type": "object",
             "required": [],
             "properties": {
@@ -124,6 +124,18 @@ RSpec.configure do |config|
             },
           },
           ####################
+          ErrorsMessages: {
+            "type": "object",
+            "required": [],
+            "properties": {
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
         },
       },
     },

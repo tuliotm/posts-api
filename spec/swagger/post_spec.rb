@@ -2,7 +2,7 @@
 
 require "swagger_helper"
 
-RSpec.describe("api/v1/post", type: :request) do
+RSpec.describe("api/v1/posts", type: :request) do
   path "/api/v1/posts" do
     post "create post" do
       tags "Post"
@@ -10,7 +10,7 @@ RSpec.describe("api/v1/post", type: :request) do
       produces "application/json"
       parameter name: :post_attributes,
         in: :body,
-        schema: { "$ref": "#/components/schemas/NewPost" }
+        schema: { "$ref": "#/components/schemas/CreateNewPost" }
 
       response "201", "created" do
         let(:user) { create(:user) }
@@ -40,16 +40,7 @@ RSpec.describe("api/v1/post", type: :request) do
           }
         end
 
-        schema "type": "object",
-          "required": [],
-          "properties": {
-            "errors": {
-              "type": "array",
-              "items": {
-                "type": "string",
-              },
-            },
-          }
+        schema "$ref": "#/components/schemas/ErrorsMessages"
 
         run_test!
       end
