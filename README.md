@@ -18,7 +18,6 @@ Follow the steps below to set up the project on your local machine:
 
 ```bash
 git clone git@github.com:tuliotm/posts-api.git
-cd PostsApi
 ```
 
 ## Install project dependencies:
