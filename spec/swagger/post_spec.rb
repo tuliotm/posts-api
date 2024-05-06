@@ -48,7 +48,7 @@ RSpec.describe("api/v1/posts", type: :request) do
   end
 
   path "/api/v1/posts/top_rated" do
-    get "get top rated posts" do
+    get "get top rated posts with N params" do
       tags "Post"
       produces "application/json"
       parameter name: :N, in: :query
@@ -77,6 +77,25 @@ RSpec.describe("api/v1/posts", type: :request) do
         let!(:N) { rand(1..10) }
 
         schema "$ref": "#/components/schemas/RenderTopNRatedPosts"
+
+        run_test!
+      end
+    end
+  end
+
+  path "/api/v1/posts/authors_ips" do
+    get "get authors ips" do
+      tags "Post"
+      produces "application/json"
+
+      response "200", "get authors ips" do
+        let!(:user1) { create(:user) }
+        let!(:user2) { create(:user) }
+        let!(:post1) { create(:post, user: user1, ip: "192.168.0.1") }
+        let!(:post2) { create(:post, user: user2, ip: "192.168.0.1") }
+        let!(:post3) { create(:post, user: user1, ip: "192.168.0.2") }
+
+        schema "$ref": "#/components/schemas/RenderAuthorsIps"
 
         run_test!
       end

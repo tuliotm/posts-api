@@ -193,6 +193,25 @@ RSpec.configure do |config|
               },
             },
           },
+          ####################
+          RenderAuthorsIps: {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "ip": {
+                  "type": "string",
+                },
+                "authors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },

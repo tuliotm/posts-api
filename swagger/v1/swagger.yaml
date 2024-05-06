@@ -30,7 +30,7 @@ paths:
               "$ref": "#/components/schemas/CreateNewPost"
   "/api/v1/posts/top_rated":
     get:
-      summary: get top rated posts
+      summary: get top rated posts with N params
       tags:
       - Post
       parameters:
@@ -43,6 +43,18 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/RenderTopNRatedPosts"
+  "/api/v1/posts/authors_ips":
+    get:
+      summary: get authors ips
+      tags:
+      - Post
+      responses:
+        '200':
+          description: get authors ips
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RenderAuthorsIps"
   "/api/v1/ratings":
     post:
       summary: create ratings
@@ -177,3 +189,15 @@ components:
             type: string
           average_rating:
             type: string
+    RenderAuthorsIps:
+      type: array
+      items:
+        type: object
+        required: []
+        properties:
+          ip:
+            type: string
+          authors:
+            type: array
+            items:
+              type: string
