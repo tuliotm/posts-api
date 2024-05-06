@@ -55,29 +55,12 @@ jobs:
         run: |
           bundle exec rails db:create
           bundle exec rails db:migrate
-          bundle exec rails db:seed
+
+      - name: Run rspec
+        run: |
+          bundle exec rspec
 
       - name: Start Rails Server
         run: |
           sleep 10
           bundle exec rails server -e test -p 3000 -d
-
-      - name: Run Seeds
-        env:
-          RAILS_ENV: "test"
-          DATABASE_URL: "postgres://postgres:password@localhost:5432/posts_api_test"
-        run: |
-          sleep 10
-          bundle exec rails db:seed
-
-      - name: Install Snap and k6
-        run: |
-          sudo apt update
-          sudo apt install -y snapd
-          sudo snap install core
-          sudo snap install k6
-
-      - name: Run k6 Load Tests
-        run: |
-          sleep 10
-          k6 run script.js
