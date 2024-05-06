@@ -26,6 +26,13 @@ jobs:
         run: |
           sudo service postgresql start
 
+      - name: Configure pg_hba.conf
+        run: |
+          PG_HBA="/etc/postgresql/16/main/pg_hba.conf"
+          sudo sed -i "s/local *all *all *peer/local all all md5/g" $PG_HBA
+          sudo sed -i "s/host *all *all *127.0.0.1\/32 *trust/host all all 127.0.0.1\/32 md5/g" $PG_HBA
+          sudo service postgresql restart
+
       - name: Set up PostgreSQL User and DB
         run: |
           sudo -u postgres psql -c "CREATE USER posts_api WITH PASSWORD 'password';"
