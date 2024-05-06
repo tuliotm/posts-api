@@ -55,17 +55,13 @@ jobs:
         run: |
           bundle exec rails db:create
           bundle exec rails db:migrate
+          sleep 20
+          bundle exec rails db:seed
 
       - name: Start Rails Server
         run: |
-          bundle exec rails server -e test -p 3000 -d
-
-      - name: Run Seeds
-        env:
-          RAILS_ENV: "test"
-        run: |
           sleep 10
-          bundle exec rails db:seed
+          bundle exec rails server -e test -p 3000 -d
 
       - name: Install Snap and k6
         run: |
@@ -76,4 +72,5 @@ jobs:
 
       - name: Run k6 Load Tests
         run: |
+          sleep 10
           k6 run script.js
