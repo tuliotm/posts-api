@@ -1,7 +1,11 @@
 # frozen_string_literal: true
 
+1000.times do
+  FactoryBot.create(:post)
+end
+
 BASE_URL = "http://localhost:3000/api/v1"
-POST_COUNT = 1000
+POST_COUNT = 200_000
 USER_COUNT = 100
 IP_COUNT = 50
 RATING_PERCENTAGE = 0.75

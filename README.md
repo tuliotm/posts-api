@@ -48,3 +48,14 @@ rails db:seed
 ```bash
 rails rswag:specs:swaggerize PATTERN="spec/swagger/**/*_spec.rb"
 ```
+
+## To test data integrity in a concurrent environment after seeds, follow these steps:
+**Run k6 script to test multiple rating create:**
+```bash
+k6 run script.js
+```
+
+**And now, verify database with ruby script**
+```bash
+ruby check_database.rb
+```

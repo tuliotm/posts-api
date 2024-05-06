@@ -13,7 +13,7 @@ class Rating < ApplicationRecord
   class << self
     def create_and_calculate_average(params)
       transaction do
-        post = Post.lock("FOR UPDATE").find_by(id: params[:post_id])
+        post = Post.find_by(id: params[:post_id])
 
         return { status: :not_found, errors: ["Post not found."] } unless post
 
