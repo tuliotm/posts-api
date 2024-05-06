@@ -10,6 +10,14 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
+      - name: Set up PostgreSQL
+        uses: harmon758/postgresql-action@v2
+        with:
+          postgresql version: '16'
+          postgresql db: 'posts_api_test'
+          postgresql user: 'posts_api'
+          postgresql password: 'password'
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -21,8 +29,13 @@ jobs:
           bundle install
 
       - name: Prepare Database
+        env:
+          PGUSER: posts_api
+          PGPASSWORD: password
         run: |
-          bundle exec rails db:setup
+          bundle exec rails db:create
+          bundle exec rails db:migrate
+          bundle exec rails db:seed
 
       - name: Start Rails Server
         run: |
