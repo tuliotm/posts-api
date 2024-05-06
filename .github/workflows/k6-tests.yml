@@ -55,12 +55,13 @@ jobs:
         run: |
           bundle exec rails db:create
           bundle exec rails db:migrate
-
-      - name: Run rspec
-        run: |
-          bundle exec rspec
+          bundle exec rails db:seed
 
       - name: Start Rails Server
         run: |
           sleep 10
           bundle exec rails server -e test -p 3000 -d
+
+      - name: Run RSpec
+        run: |
+          bundle exec rspec
