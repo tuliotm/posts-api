@@ -22,14 +22,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-16 postgresql-client-16
 
-      - name: Start PostgreSQL Service
-        run: |
-          sudo service postgresql start
-
-      - name: Check PostgreSQL Status
-        run: |
-          sudo service postgresql status
-
       - name: Configure pg_hba.conf
         run: |
           PG_HBA="/etc/postgresql/16/main/pg_hba.conf"
@@ -40,8 +32,8 @@ jobs:
       - name: Set up PostgreSQL User and DB
         run: |
           sudo -u postgres psql -c "CREATE USER posts_api WITH PASSWORD 'password';"
-          sudo -u postgres psql -c "CREATE DATABASE posts_api_development OWNER posts_api;"
           sudo -u postgres psql -c "CREATE DATABASE posts_api_test OWNER posts_api;"
+          sudo -u postgres psql -c "CREATE DATABASE posts_api_development OWNER posts_api;"
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -54,10 +46,8 @@ jobs:
           bundle install
 
       - name: Prepare Database
-        env:
-          PGUSER: posts_api
-          PGPASSWORD: password
         run: |
+          bundle exec rails db:create
           bundle exec rails db:migrate
           bundle exec rails db:seed
 
