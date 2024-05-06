@@ -3,49 +3,53 @@ name: Run k6 Load Tests
 on: [push, pull_request]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
-      - name: Check out code
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Add PostgreSQL Official Repository
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget lsb-release
-          echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-          wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-
-      - name: Install PostgreSQL 16
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-16 postgresql-client-16
-
-      - name: Configure pg_hba.conf
-        run: |
-          PG_HBA="/etc/postgresql/16/main/pg_hba.conf"
-          sudo sed -i "s/local *all *all *peer/local all all md5/g" $PG_HBA
-          sudo sed -i "s/host *all *all *127.0.0.1\/32 *trust/host all all 127.0.0.1\/32 md5/g" $PG_HBA
-          sudo service postgresql restart
-
-      - name: Set up PostgreSQL User and DB
-        run: |
-          sudo -u postgres psql -c "CREATE USER posts_api WITH PASSWORD 'password';"
-          sudo -u postgres psql -c "CREATE DATABASE posts_api_test OWNER posts_api;"
-          sudo -u postgres psql -c "CREATE DATABASE posts_api_development OWNER posts_api;"
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - name: Set up Ruby 3.3.1
+        uses: actions/setup-ruby@v1
         with:
           ruby-version: 3.3.1
 
-      - name: Install Dependencies
+      - name: Setup cache key and directory for gems cache
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gem-use-ruby-${{ hashFiles('**/Gemfile.lock') }}
+
+      - name: Get Yarn cache directory path
+        id: yarn-cache
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Setup cache key e directory para node_modules cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Bundle install
         run: |
-          gem install bundler
-          bundle install
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: Yarn install
+        run: yarn --frozen-lockfile
 
       - name: Prepare Database
+        env:
+          RAILS_ENV: "test"
+          DATABASE_URL: "postgres://postgres@localhost:5432/posts_api_test"
         run: |
           bundle exec rails db:create
           bundle exec rails db:migrate
