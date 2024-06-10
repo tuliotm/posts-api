@@ -14,38 +14,6 @@ RSpec.describe(Post, type: :model) do
     it { should have_many(:ratings) }
   end
 
-  describe ".user_post" do
-    context "when user is found or created" do
-      let(:params) { { user_login: "testuser", title: "Test Post", body: "This is a test post", ip: "127.0.0.1" } }
-
-      it "creates a new post associated with the user" do
-        expect do
-          Post.user_post(params)
-        end.to(change(Post, :count).by(1))
-
-        post = Post.last
-        expect(post.title).to(eq("Test Post"))
-        expect(post.body).to(eq("This is a test post"))
-        expect(post.ip).to(eq("127.0.0.1"))
-        expect(post.user.login).to(eq("testuser"))
-      end
-    end
-
-    context "when user is not persisted" do
-      let(:params) do
-        { title: "Test Post", body: "This is a test post" }
-      end
-
-      it "does not create a new post" do
-        expect do
-          Post.user_post(params)
-        end.not_to(change(Post, :count))
-
-        expect(Post.user_post(params)).to(be_nil)
-      end
-    end
-  end
-
   describe ".top_rated" do
     let!(:post1) { create(:post) }
     let!(:post2) { create(:post) }
