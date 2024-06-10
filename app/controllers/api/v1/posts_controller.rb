@@ -3,21 +3,29 @@
 module Api
   module V1
     class PostsController < ApplicationController
-      def create
-        post = Post.user_post(post_params.merge(ip: request.remote_ip))
+      before_action :validate_user, only: [:create]
 
-        if post.present? && post.persisted?
+      DEFAULT_TOP_N = 10
+
+      def create
+        user = User.find_or_create_by(login: post_params[:user_login])
+
+        post = user.posts.new(
+          title: post_params[:title],
+          body: post_params[:body],
+          ip: request.remote_ip,
+        )
+
+        if post.save
           render(json: CreatePostSerializer.new(post).serializable_hash.to_json, status: :created)
         else
-          errors = post&.errors&.full_messages || ["User couldn't be created or persisted"]
+          errors = post&.errors&.full_messages
           render(json: { errors: errors }, status: :unprocessable_entity)
         end
       end
 
       def top_rated
-        default_top_n = 10
-
-        n = params[:N].presence || default_top_n
+        n = params[:N].presence || DEFAULT_TOP_N
         posts = Post.top_rated(n)
 
         render(json: posts, each_serializer: TopRatedPostsSerializer)
@@ -32,6 +40,12 @@ module Api
 
       def post_params
         params.require(:post).permit(:title, :body, :user_login)
+      end
+
+      def validate_user
+        if post_params[:user_login].blank?
+          render(json: { errors: ["User login cannot be blank"] }, status: :bad_request)
+        end
       end
     end
   end

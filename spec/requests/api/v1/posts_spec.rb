@@ -80,10 +80,10 @@ RSpec.describe("Api::V1::Posts", type: :request) do
       end
 
       it "returns blank user_login error" do
-        post "/api/v1/posts", params: { "post": { title: "" } }
+        post "/api/v1/posts", params: { "post": { title: "Test", body: "Test" } }
         json_response = JSON.parse(response.body)
         expect(json_response["errors"]).to(include(
-          "User couldn't be created or persisted",
+          "User login cannot be blank",
         ))
       end
 
