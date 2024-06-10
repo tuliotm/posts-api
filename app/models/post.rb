@@ -10,16 +10,17 @@ class Post < ApplicationRecord
   validates :body, presence: true
   validates :ip, presence: true
 
+  #== SCOPES =============================================
+  scope :top_rated, ->(limit) {
+    joins(:ratings)
+      .select("posts.id, posts.title, posts.body, AVG(ratings.value) as average_rating")
+      .group("posts.id")
+      .order("average_rating DESC")
+      .limit(limit)
+  }
+
   #== CLASS METHODS ======================================
   class << self
-    def top_rated(limit)
-      joins(:ratings)
-        .select("posts.id, posts.title, posts.body, AVG(ratings.value) as average_rating")
-        .group("posts.id")
-        .order("average_rating DESC")
-        .limit(limit)
-    end
-
     def authors_ips
       ips = select(:ip).distinct
       result = []

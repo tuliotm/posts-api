@@ -23,7 +23,7 @@ class Rating < ApplicationRecord
 
         rating = new(params)
 
-        if rating.save!
+        if rating.save
           average = where(post_id: params[:post_id]).average(:value).round(2)
           return { status: :created, average: average }
         else
