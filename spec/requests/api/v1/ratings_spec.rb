@@ -65,13 +65,13 @@ RSpec.describe("Api::V1::Ratings", type: :request) do
           post api_v1_ratings_path, params: invalid_attributes
         end
 
-        it "returns status code not_found" do
-          expect(response).to(have_http_status(:not_found))
+        it "returns status code unprocessable_entity" do
+          expect(response).to(have_http_status(:unprocessable_entity))
         end
 
         it "returns error messages when post is null or don't exists" do
           json_response = JSON.parse(response.body)
-          expect(json_response["errors"]).to(include("Post not found."))
+          expect(json_response["errors"]).to(include("Post must exist"))
         end
       end
 
@@ -146,7 +146,7 @@ RSpec.describe("Api::V1::Ratings", type: :request) do
 
         it "returns status code unprocessable entity" do
           json_response = JSON.parse(response.body)
-          expect(json_response["errors"]).to(include("Post already rated."))
+          expect(json_response["errors"]).to(include("User has already been taken"))
           expect(response).to(have_http_status(:unprocessable_entity))
         end
       end
