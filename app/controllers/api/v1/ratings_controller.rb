@@ -3,13 +3,16 @@
 module Api
   module V1
     class RatingsController < ApplicationController
-      def create
-        result = Rating.create_and_calculate_average(rating_params)
+      before_action :set_post
 
-        if result[:status] == :created
-          render(json: { average: result[:average], post_id: rating_params[:post_id] }, status: :created)
+      def create
+        rating = Rating.new(rating_params)
+
+        if rating.save
+          average = Rating.where(post_id: rating_params[:post_id]).average(:value).round(2)
+          render(json: { average: average, post_id: rating_params[:post_id] }, status: :created)
         else
-          render(json: { errors: result[:errors] }, status: result[:status])
+          render(json: { errors: rating.errors.full_messages }, status: :unprocessable_entity)
         end
       end
 
@@ -17,6 +20,10 @@ module Api
 
       def rating_params
         params.require(:rating).permit(:post_id, :user_id, :value)
+      end
+
+      def set_post
+        @post = Post.find_by(id: rating_params[:post_id])
       end
     end
   end
