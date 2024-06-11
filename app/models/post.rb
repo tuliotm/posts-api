@@ -18,4 +18,11 @@ class Post < ApplicationRecord
       .order("average_rating DESC")
       .limit(limit)
   }
+
+  scope :with_multiple_authors_ips, -> {
+    joins(:user)
+      .select("posts.ip, ARRAY_AGG(DISTINCT users.login) AS authors")
+      .group("posts.ip")
+      .having("COUNT(DISTINCT users.id) > 1")
+  }
 end

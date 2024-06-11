@@ -3,8 +3,6 @@
 module Api
   module V1
     class RatingsController < ApplicationController
-      before_action :set_post
-
       def create
         rating = Rating.new(rating_params)
 
@@ -20,10 +18,6 @@ module Api
 
       def rating_params
         params.require(:rating).permit(:post_id, :user_id, :value)
-      end
-
-      def set_post
-        @post = Post.find_by(id: rating_params[:post_id])
       end
     end
   end
