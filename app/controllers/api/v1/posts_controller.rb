@@ -33,12 +33,12 @@ module Api
 
       def authors_ips
         result = Post.joins(:user)
-                     .select('posts.ip, ARRAY_AGG(DISTINCT users.login) AS authors')
-                     .group('posts.ip')
-                     .having('COUNT(DISTINCT users.id) > 1')
-                     .map do |record|
-                       { ip: record.ip, authors: record.authors }
-                     end
+          .select("posts.ip, ARRAY_AGG(DISTINCT users.login) AS authors")
+          .group("posts.ip")
+          .having("COUNT(DISTINCT users.id) > 1")
+          .map do |record|
+          { ip: record.ip, authors: record.authors }
+        end
 
         render(json: result, each_serializer: AuthorsIpsSerializer)
       end
