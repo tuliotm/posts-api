@@ -32,11 +32,7 @@ module Api
       end
 
       def authors_ips
-        result = Post.joins(:user)
-          .select("posts.ip, ARRAY_AGG(DISTINCT users.login) AS authors")
-          .group("posts.ip")
-          .having("COUNT(DISTINCT users.id) > 1")
-          .map do |record|
+        result = Post.with_multiple_authors_ips.map do |record|
           { ip: record.ip, authors: record.authors }
         end
 
